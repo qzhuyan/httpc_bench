@@ -42,7 +42,8 @@ start(PoolSize) ->
                 {pool_type, hash},
                 {connect_timeout, 5000},
                 {retry, 5},
-                {retry_timeout, 1000}
+                {retry_timeout, 1000},
+                {keepalive, infinity}
                 ],
     {ok, _} = ehttpc_sup:start_pool(httpc_bench, PoolOpts).
 
