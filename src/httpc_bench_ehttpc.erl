@@ -13,9 +13,13 @@
 get() ->
     N = case get(pool_sel_n) of
                 undefined ->
-                        << 131, 88, 100, Size:16/big-unsigned-integer, _Node:Size/bytes,
+                        << 131, Type, 100, Size:16/big-unsigned-integer, _Node:Size/bytes,
                            PidInt:32/integer, _Left/binary>>
                                 = term_to_binary(self(), [{compressed,0}]),
+                        %% ExtType ref: https://erlang.org/doc/apps/erts/erl_ext_dist.html
+                        %% 103 for 12.10  PID_EXT
+                        %% 88 for 12.11  NEW_PID_EXT
+                        true = (Type == 88 orelse Type == 103),
                         put(pool_sel_n, PidInt),
                         PidInt;
                 X when is_integer(X) ->
