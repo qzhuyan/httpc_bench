@@ -11,7 +11,18 @@
 
 %% public
 get() ->
-    case ehttpc:request(httpc_bench, get, {?PATH, ?HEADERS}, ?TIMEOUT) of
+    N = case get(pool_sel_n) of
+                undefined ->
+                        << 131, 88, 100, Size:16/big-unsigned-integer, _Node:Size/bytes,
+                           PidInt:32/integer, _Left/binary>>
+                                = term_to_binary(self(), [{compressed,0}]),
+                        put(pool_sel_n, PidInt),
+                        PidInt;
+                X when is_integer(X) ->
+                        X
+        end,
+
+    case ehttpc:request({httpc_bench, N}, get, {?PATH, ?HEADERS}, ?TIMEOUT) of
         {ok, _, _, _} ->
             ok;
         {error, Reason} ->
@@ -24,7 +35,7 @@ start(PoolSize) ->
                 {port, 8080},
                 {enable_pipelining, true},
                 {pool_size, PoolSize},
-                {pool_type, random},
+                {pool_type, hash},
                 {connect_timeout, 5000},
                 {retry, 5},
                 {retry_timeout, 1000}
